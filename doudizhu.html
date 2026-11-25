@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11111f">
+  <meta name="description" content="和两位 AI 打经典三人斗地主。轮流叫分，选牌跟牌，支持出牌提示和积分结算。">
+  <title>河牌俱乐部 · 斗地主</title>
+  <link rel="icon" type="image/png" href="./chip.png">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./doudizhu.css">
+  <script type="module" src="./doudizhu.mjs"></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="width masthead-inner">
+      <div class="wordmark" aria-label="Riverroom 河牌俱乐部">
+        <span class="brand-chip" aria-hidden="true"><span>♠</span></span>
+        <span>RIVERROOM</span>
+      </div>
+      <nav class="game-nav" aria-label="切换牌桌">
+        <a href="./">德州扑克</a>
+        <a href="./doudizhu.html" aria-current="page">斗地主</a>
+      </nav>
+      <button class="rules-button" id="ddz-open-rules" type="button">
+        <span class="book-icon" aria-hidden="true"></span>玩法规则
+      </button>
+    </div>
+  </header>
+
+  <main class="width main ddz-main">
+    <div class="intro">
+      <div>
+        <p class="eyebrow">三人桌 <span class="eyebrow-dot" aria-hidden="true">·</span> 经典叫分</p>
+        <h1>斗地主</h1>
+      </div>
+      <div class="ddz-difficulty">
+        <div class="compact-field">
+          <label for="ddz-difficulty">AI 难度</label>
+          <span class="select-wrap"><select id="ddz-difficulty" aria-describedby="ddz-difficulty-description"></select></span>
+        </div>
+        <p id="ddz-difficulty-description"></p>
+      </div>
+    </div>
+
+    <div class="ddz-room">
+      <section class="ddz-table" id="ddz-table" data-phase="idle" aria-label="斗地主牌桌">
+        <div class="ddz-felt" aria-hidden="true"></div>
+
+        <div class="ddz-meta">
+          <div class="ddz-round-meta">
+            <span class="hand-number" id="ddz-round">待开局</span>
+            <span class="ddz-stake" id="ddz-stake" hidden></span>
+          </div>
+          <div class="ddz-bottom">
+            <span>底牌</span>
+            <div class="ddz-card-line" id="ddz-bottom" role="group" aria-label="三张底牌"></div>
+          </div>
+          <button class="action action--call ddz-tracker-button" id="ddz-open-tracker" type="button" aria-haspopup="dialog" aria-controls="ddz-tracker">记牌器</button>
+        </div>
+
+        <div class="ddz-rivals">
+          <div class="ddz-rival-column"><div class="ddz-rival" id="ddz-seat-1">
+            <span class="avatar avatar--computer" aria-hidden="true"><span class="robot"></span></span>
+            <div class="ddz-rival-copy">
+              <strong>AI 1</strong>
+              <span class="ddz-role" id="ddz-role-1" hidden></span>
+            </div>
+            <span class="ddz-count" id="ddz-count-1" hidden></span>
+          </div>
+          <div class="ddz-seat-action" id="ddz-action-1" hidden></div></div>
+          <div class="ddz-rival-column"><div class="ddz-rival" id="ddz-seat-2">
+            <span class="avatar avatar--computer" aria-hidden="true"><span class="robot"></span></span>
+            <div class="ddz-rival-copy">
+              <strong>AI 2</strong>
+              <span class="ddz-role" id="ddz-role-2" hidden></span>
+            </div>
+            <span class="ddz-count" id="ddz-count-2" hidden></span>
+          </div>
+          <div class="ddz-seat-action" id="ddz-action-2" hidden></div></div>
+        </div>
+
+        <div class="ddz-center">
+          <div class="ddz-lobby" id="ddz-lobby">
+            <div class="ddz-lobby-cards" aria-hidden="true">
+              <span class="card card--face">♣</span>
+              <span class="card card--face card--red">♦</span>
+              <span class="card card--face">♠</span>
+            </div>
+            <button class="action action--raise" id="ddz-start" type="button">开始斗地主</button>
+          </div>
+          <p class="ddz-turn" id="ddz-turn" role="status"></p>
+          <p class="ddz-event" id="ddz-event" role="status"></p>
+        </div>
+
+        <div class="ddz-seat-action ddz-seat-action--player" id="ddz-action-0" hidden></div>
+
+        <div class="ddz-hand-area" id="ddz-hand-area" hidden>
+          <div class="ddz-hand-heading">
+            <div>
+              <h2>你的手牌</h2>
+              <span class="ddz-role" id="ddz-role-0" hidden></span>
+            </div>
+            <span class="ddz-count" id="ddz-count-0"></span>
+          </div>
+          <div class="ddz-hand" id="ddz-hand" role="group" aria-label="点击选择手牌"></div>
+        </div>
+
+        <div class="ddz-controls" id="ddz-controls" hidden>
+          <div class="ddz-bid-controls" id="ddz-bid-controls" role="group" aria-label="叫分" hidden>
+            <button class="action action--fold" type="button" data-bid="0">不叫</button>
+            <button class="action action--call" type="button" data-bid="1">1 分</button>
+            <button class="action action--call" type="button" data-bid="2">2 分</button>
+            <button class="action action--raise" type="button" data-bid="3">3 分</button>
+          </div>
+          <div id="ddz-play-controls" hidden>
+            <div class="ddz-selection-row">
+              <p class="ddz-selection" id="ddz-selection" role="status"></p>
+              <button class="action action--fold ddz-clear" id="ddz-clear" type="button" aria-label="清空已选手牌" disabled>清空</button>
+            </div>
+            <div class="ddz-play-buttons">
+              <button class="action action--fold" id="ddz-pass" type="button">不出</button>
+              <button class="action action--call" id="ddz-hint" type="button">提示</button>
+              <button class="action action--raise" id="ddz-play" type="button">出牌</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ddz-summary" id="ddz-summary" aria-labelledby="ddz-result-title" hidden>
+          <div>
+            <h2 id="ddz-result-title"></h2>
+            <p id="ddz-result-detail"></p>
+          </div>
+          <button class="action action--raise" id="ddz-next" type="button">再来一局</button>
+        </div>
+      </section>
+
+      <aside class="ddz-side" aria-label="斗地主积分和记录">
+        <section class="panel ddz-score-panel" aria-labelledby="ddz-score-title">
+          <h2 id="ddz-score-title"><span class="panel-signal" aria-hidden="true"><i></i><i></i><i></i></span>本场积分</h2>
+          <dl class="ddz-score">
+            <div><dt>你</dt><dd id="ddz-score-0">0</dd></div>
+            <div><dt>AI 1</dt><dd id="ddz-score-1">0</dd></div>
+            <div><dt>AI 2</dt><dd id="ddz-score-2">0</dd></div>
+          </dl>
+        </section>
+
+        <section class="panel history-panel ddz-history-panel" id="ddz-history-panel" aria-labelledby="ddz-history-title" hidden>
+          <h2 id="ddz-history-title"><span class="panel-list" aria-hidden="true"><i></i><i></i><i></i></span>本局记录</h2>
+          <div class="history-list" id="ddz-history-scroll" tabindex="0" role="region" aria-label="本局出牌记录">
+            <ol id="ddz-history"></ol>
+          </div>
+        </section>
+      </aside>
+    </div>
+    <footer class="footer">使用游戏积分</footer>
+  </main>
+
+  <dialog id="ddz-tracker" class="dialog dialog--tracker" aria-labelledby="ddz-tracker-title" aria-describedby="ddz-tracker-description">
+    <div class="dialog-inner">
+      <div class="dialog-heading">
+        <div class="ddz-tracker-title">
+          <h2 id="ddz-tracker-title">记牌器</h2>
+          <span class="ddz-tracker-total" id="ddz-tracker-total" hidden></span>
+        </div>
+        <form method="dialog"><button class="dialog-close" type="submit" aria-label="关闭记牌器" autofocus>×</button></form>
+      </div>
+      <p id="ddz-tracker-description">发牌后可查看你手牌以外尚未打出的牌。</p>
+      <dl class="ddz-tracker-counts" id="ddz-tracker-counts" aria-label="各点数剩余张数" hidden></dl>
+    </div>
+  </dialog>
+
+  <dialog id="ddz-rules" class="dialog dialog--rules" aria-labelledby="ddz-rules-title">
+    <div class="dialog-inner">
+      <div class="dialog-heading">
+        <h2 id="ddz-rules-title">斗地主规则</h2>
+        <form method="dialog"><button class="dialog-close" type="submit" aria-label="关闭规则" autofocus>×</button></form>
+      </div>
+      <h3>叫地主</h3>
+      <p>每人先拿 17 张牌。轮到你时，可以不叫，或叫比当前更高的分数。叫 3 分直接成为地主，否则一轮后由最高叫分者当地主。三人都不叫就重新发牌。地主拿走公开的三张底牌，并第一个出牌。</p>
+      <h3>出牌与跟牌</h3>
+      <p>点手牌选中，再按「出牌」。「提示」会选出一组合法牌，可以反复点击换一组。跟牌时可选「不出」，或用同牌型、同张数、更高点数的牌压过上一手。连续两人不出后，由最后出牌的人领出新一轮。</p>
+      <p>单牌从小到大为 3 至 A、2、小王、大王。炸弹可以压过普通牌型，王炸可以压过炸弹。</p>
+      <dl class="ddz-rule-combos">
+        <div><dt>单牌、对子、三张</dt><dd>同点数的 1 张、2 张或 3 张。</dd></div>
+        <div><dt>三带一、三带一对</dt><dd>三张同点牌带一张单牌或一对。</dd></div>
+        <div><dt>顺子、连对</dt><dd>至少 5 张连续单牌，或至少 3 个连续对子。</dd></div>
+        <div><dt>飞机</dt><dd>至少 2 组三张连续同点牌，可每组带一张单牌或一对。</dd></div>
+        <div><dt>四带二、四带两对</dt><dd>四张同点牌带两张单牌，或带两对不同点数的对子。</dd></div>
+        <div><dt>炸弹、王炸</dt><dd>四张同点的牌是炸弹。小王和大王一起出是王炸。</dd></div>
+      </dl>
+      <p class="rule-note">顺子、连对和飞机的主体只用 3 至 A。带单牌时，同点数最多带两张，大小王最多带一张，所带牌的点数须与主体不同。</p>
+      <h3>输赢与积分</h3>
+      <p>地主先出完，地主胜。任一农民先出完，两名农民一起赢。叫分是底分，每次炸弹或王炸都让倍数翻倍。地主赢且两个农民都未出牌为春天，农民赢且地主只出过一手为反春，两种情况都再翻一倍。</p>
+      <p>每名农民按底分乘倍数结算，地主结算两份。</p>
+    </div>
+  </dialog>
+</body>
+</html>

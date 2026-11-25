@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11111f">
+  <meta name="description" content="和 AI 打 2 至 5 人无限注德州扑克，提供四档难度和牌型图解。">
+  <title>河牌俱乐部 · 德州扑克</title>
+  <link rel="icon" type="image/png" href="./chip.png">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="width masthead-inner">
+      <div class="wordmark" aria-label="Riverroom 河牌俱乐部">
+        <span class="brand-chip" aria-hidden="true"><span>♠</span></span>
+        <span>RIVERROOM</span>
+      </div>
+      <nav class="game-nav" aria-label="切换牌桌">
+        <a href="./" aria-current="page">德州扑克</a>
+        <a href="./doudizhu.html">斗地主</a>
+      </nav>
+      <button class="rules-button" data-open-rules type="button">
+        <span class="book-icon" aria-hidden="true"></span>玩法规则
+      </button>
+    </div>
+  </header>
+
+  <main class="width main">
+    <div class="intro">
+      <div>
+        <p class="eyebrow"><span id="game-mode">单挑</span> <span class="eyebrow-dot" aria-hidden="true">·</span> 无限注</p>
+        <h1>德州扑克</h1>
+      </div>
+      <div class="blind-caption"><span class="mini-chip" aria-hidden="true"></span><span>盲注</span><strong>$5 / $10</strong></div>
+      <div class="compact-settings">
+        <div class="compact-field">
+          <label for="seat-count-select">人数</label>
+          <span class="select-wrap"><select id="seat-count-select" aria-describedby="seat-count-description"></select></span>
+        </div>
+        <div class="compact-field">
+          <label for="difficulty-select">AI 难度</label>
+          <span class="select-wrap"><select id="difficulty-select" aria-describedby="difficulty-description"></select></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="room">
+      <div class="game-column">
+        <section class="table" id="table" data-turn="idle" data-seat-count="2" aria-label="德州扑克桌">
+          <div class="felt" aria-hidden="true"></div>
+          <div class="deck-stack" id="deck" aria-hidden="true"></div>
+          <div class="table-meta">
+            <span class="hand-number" id="hand-number" hidden></span>
+            <span class="street" id="street">待开局</span>
+          </div>
+
+          <div id="seats"></div>
+
+          <div class="pot" aria-label="底池筹码">
+            <span class="pot-icon" aria-hidden="true"><i></i><i></i></span>
+            <div class="pot-caption"><span class="pot-label" id="pot-label">底池</span><strong id="pot"></strong></div>
+          </div>
+          <div class="board" id="board" aria-label="公共牌"></div>
+          <div class="table-status">
+            <p class="turn-caption" id="turn-caption" role="status"></p>
+          </div>
+          <div class="table-lobby" id="table-lobby">
+            <span class="brand-chip lobby-chip" aria-hidden="true"><span>♠</span></span>
+            <button class="action action--raise" id="start" type="button">开始对局</button>
+            <span class="lobby-blinds">盲注 $5 / $10</span>
+          </div>
+
+          <div class="card-flights" id="card-flights" aria-hidden="true"></div>
+        </section>
+
+        <section class="controls" id="controls" aria-label="下注操作" hidden>
+          <div id="betting-controls">
+            <div class="bet-config" id="bet-config">
+              <div class="bet-label">
+                <label for="bet-range" id="bet-label">加注至</label>
+                <span class="bet-amount"><span aria-hidden="true">$</span><input class="bet-value" id="bet-value" type="number" inputmode="numeric" step="1" placeholder="—" aria-label="自定义金额（美元）" aria-describedby="bet-guidance"></span>
+              </div>
+              <input id="bet-range" class="bet-range" type="range" min="0" max="1" step="1" value="0">
+              <div class="bet-shortcuts">
+                <div class="quick-bets quick-bets--fixed" role="group" aria-label="固定金额">
+                  <button type="button" data-amount="20">$20</button>
+                  <button type="button" data-amount="30">$30</button>
+                  <button type="button" data-amount="50">$50</button>
+                  <button type="button" data-amount="100">$100</button>
+                </div>
+                <div class="quick-bets" role="group" aria-label="快捷金额">
+                  <button type="button" data-size="minimum">最小</button>
+                  <button type="button" data-size="0.5">半池</button>
+                  <button type="button" data-size="1">满池</button>
+                  <button type="button" data-size="all">全下</button>
+                </div>
+              </div>
+              <p class="bet-guidance" id="bet-guidance" role="status" hidden></p>
+            </div>
+            <div class="action-buttons">
+              <button id="fold" class="action action--fold" type="button">弃牌</button>
+              <button id="call" class="action action--call" type="button">跟注</button>
+              <button id="raise" class="action action--raise" type="button">加注</button>
+              <button id="open-advisor" class="action action--advisor" type="button" aria-haspopup="dialog" aria-controls="advisor-dialog">
+                <span class="panel-signal" aria-hidden="true"><i></i><i></i><i></i></span>AI 建议与分析
+              </button>
+            </div>
+          </div>
+          <div class="end-controls" id="end-controls" hidden>
+            <div class="result-copy">
+              <p class="result-title" id="result-title"></p>
+              <p class="result-detail" id="result-detail"></p>
+              <button class="action action--call result-review" id="open-showdown" type="button" aria-haspopup="dialog" aria-controls="showdown-dialog" hidden>查看摊牌</button>
+            </div>
+            <button id="next-hand" class="action action--raise" type="button">下一手</button>
+          </div>
+        </section>
+      </div>
+
+      <aside class="room-aside is-idle" id="room-aside" aria-label="牌桌设置和记录">
+        <section class="panel difficulty-panel" aria-labelledby="table-settings-heading">
+          <h2 id="table-settings-heading"><span class="panel-signal" aria-hidden="true"><i></i><i></i><i></i></span>牌桌设置</h2>
+          <h3 class="setting-label" id="seat-count-heading">人数</h3>
+          <div class="seat-count-grid" id="seat-count-options" role="group" aria-labelledby="seat-count-heading"></div>
+          <p class="setting-description" id="seat-count-description"></p>
+          <h3 class="setting-label" id="difficulty-heading">AI 难度</h3>
+          <div class="difficulty-grid" id="difficulty-options" role="group" aria-label="选择 AI 难度"></div>
+          <p class="difficulty-description" id="difficulty-description"></p>
+        </section>
+
+        <section class="panel history-panel" id="history-panel" aria-labelledby="history-heading" hidden>
+          <h2 id="history-heading"><span class="panel-list" aria-hidden="true"><i></i><i></i><i></i></span>本手记录</h2>
+          <div class="history-list" id="history-scroll" tabindex="0" role="region" aria-label="本手行动记录">
+            <ol id="hand-log"></ol>
+          </div>
+          <button class="reset-button" id="reset" type="button">重新开局</button>
+        </section>
+      </aside>
+    </div>
+    <footer class="footer">仅使用虚拟美元</footer>
+  </main>
+
+  <dialog id="rules-dialog" class="dialog dialog--rules" aria-labelledby="rules-title">
+    <div class="dialog-inner">
+      <div class="dialog-heading">
+        <h2 id="rules-title">玩法规则</h2>
+        <form method="dialog"><button class="dialog-close" type="submit" aria-label="关闭">×</button></form>
+      </div>
+      <p>每位玩家各有 $1,000 虚拟美元。庄家（BTN）每手轮换。三人及以上时，庄家左侧依次是 $5 小盲和 $10 大盲。四人桌有庄家右侧的关煞位（CO），五人桌再往右一席是劫位（HJ）。翻牌前从大盲左侧开始，翻牌后从庄家左侧开始。只剩两人时，庄家兼小盲，翻牌前先行动，大盲在翻牌后先行动。</p>
+      <h3>四种花色</h3>
+      <div class="suit-examples" id="suit-examples"></div>
+      <p class="rule-note">四种花色地位相同，摊牌按五张牌的牌型和点数比较。</p>
+      <h3>一手怎么打</h3>
+      <p>先拿两张手牌，再依次发出三张翻牌、一张转牌和一张河牌。面对下注可弃牌、跟注或加注。无需跟注时，可过牌或下注。</p>
+      <p>对手弃牌时你直接赢得底池。打到摊牌时，从两张手牌和五张公共牌中选出最强的五张，比牌后结算。牌力完全相同则平分底池。</p>
+      <h3>牌型从强到弱</h3>
+      <ol class="hand-examples" id="hand-examples"></ol>
+      <h3>全下和边池</h3>
+      <p>未被对手跟注的金额会退回。有人全下时，每人只能争夺自己参与的底池，主池和边池分别结算。筹码归零的玩家出局。你出局或赢下整桌后，可以准备下一局。</p>
+    </div>
+  </dialog>
+
+  <dialog id="advisor-dialog" class="dialog dialog--advisor" aria-labelledby="advisor-title">
+    <div class="dialog-inner">
+      <div class="dialog-heading">
+        <h2 id="advisor-title">AI 建议与分析</h2>
+        <form method="dialog"><button class="dialog-close" type="submit" aria-label="关闭分析" autofocus>×</button></form>
+      </div>
+      <div id="advisor-details" hidden>
+        <p class="advisor-context" id="advisor-context"></p>
+        <div class="advisor-hand">
+          <span>你的手牌</span>
+          <strong id="advisor-pocket"></strong>
+          <span id="advisor-hand-type"></span>
+        </div>
+        <div class="advisor-hand" id="advisor-board-row" hidden>
+          <span>公共牌</span>
+          <strong id="advisor-board"></strong>
+        </div>
+        <dl class="advisor-metrics">
+          <div><dt>摊牌权益</dt><dd id="advisor-equity"></dd></div>
+          <div><dt>跟注所需权益</dt><dd id="advisor-odds"></dd></div>
+          <div><dt>当前底池</dt><dd id="advisor-pot"></dd></div>
+        </dl>
+      </div>
+      <div class="advisor-suggestion" role="status">
+        <strong id="advisor-decision"></strong>
+        <p id="advisor-reason"></p>
+      </div>
+      <p class="advisor-method">摊牌权益是模拟中平均分到的底池比例。模拟参考已见牌和对手下注记录。</p>
+    </div>
+  </dialog>
+
+  <dialog id="showdown-dialog" class="dialog dialog--showdown" aria-labelledby="showdown-title">
+    <div class="dialog-inner">
+      <div class="dialog-heading">
+        <h2 id="showdown-title">摊牌结果</h2>
+        <form method="dialog"><button class="dialog-close" type="submit" aria-label="关闭摊牌结果" autofocus>×</button></form>
+      </div>
+      <ol class="showdown-pots" id="showdown-pots" aria-label="底池分配"></ol>
+      <ul class="showdown-hands" id="showdown-hands" aria-label="获胜牌型"></ul>
+    </div>
+  </dialog>
+
+  <dialog id="reset-dialog" class="dialog dialog--small" aria-labelledby="reset-title">
+    <div class="dialog-inner">
+      <h2 id="reset-title">重新开局？</h2>
+      <p>当前对局将结束。所有玩家恢复为 $1,000，牌桌回到待开局状态。</p>
+      <form class="dialog-actions" method="dialog">
+        <button class="action action--fold" value="cancel" autofocus>继续打</button>
+        <button class="action action--raise" value="reset">重新开局</button>
+      </form>
+    </div>
+  </dialog>
+</body>
+</html>
